@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="dark">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Automazioni AS Growth</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--xs:.75rem;--sm:.875rem;--base:1rem;--lg:1.25rem;--xl:1.8rem;--sp2:.5rem;--sp3:.75rem;--sp4:1rem;--sp5:1.25rem;--sp6:1.5rem;--sp8:2rem;--r-sm:.35rem;--r-md:.5rem;--r-lg:.75rem;--r-xl:1rem;--r-full:9999px;--tr:180ms cubic-bezier(.16,1,.3,1)}
+[data-theme=dark]{--bg:#0f0e0d;--sur:#161514;--sur2:#1c1b19;--sur3:#222120;--brd:#2e2c2a;--div:#252422;--tx:#d4d3d0;--mu:#7a7876;--fa:#4a4846;--pr:#5ba3af;--prh:#1e3035;--gr:#6daa45;--grh:#1e3014;--or:#e08444;--orh:#352010;--pu:#a86fdf;--puh:#2a1d3a;--re:#d16380;--reh:#3a1520;--ye:#e8a234;--yeh:#3a2f10;--sh:0 4px 16px oklch(0 0 0/.4)}
+[data-theme=light]{--bg:#f7f6f2;--sur:#faf9f6;--sur2:#fff;--sur3:#f0ede8;--brd:#d8d4ce;--div:#e4e0da;--tx:#28251d;--mu:#6b6860;--fa:#a8a49e;--pr:#01696f;--prh:#d4ecee;--gr:#437a22;--grh:#d4e8c8;--or:#da7101;--orh:#f8e8d0;--pu:#7a39bb;--puh:#e4d8f4;--re:#a12c7b;--reh:#eecfe4;--ye:#b07a00;--yeh:#f0e4c0;--sh:0 4px 16px oklch(0.2 0.01 80/.10)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{font-family:"Inter",sans-serif;font-size:var(--sm);color:var(--tx);background:var(--bg);line-height:1.6}
+button{cursor:pointer;background:none;border:none;font:inherit;color:inherit}
+.topbar{background:var(--sur);border-bottom:1px solid var(--brd);padding:.6rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px oklch(0 0 0/.2)}
+.brand{display:flex;align-items:center;gap:.75rem}
+.brand-icon{width:32px;height:32px;border-radius:8px;background:var(--prh);display:flex;align-items:center;justify-content:center;font-size:15px}
+.brand-name{font-weight:700;font-size:var(--base);letter-spacing:-.02em}
+.brand-sub{font-size:var(--xs);color:var(--mu)}
+.tr-btn{width:34px;height:34px;border-radius:var(--r-md);border:1px solid var(--brd);background:var(--sur2);display:flex;align-items:center;justify-content:center;color:var(--mu);transition:all var(--tr)}
+.tr-btn:hover{color:var(--tx);border-color:var(--pr)}
+.bdg{display:inline-flex;align-items:center;font-size:var(--xs);font-weight:600;padding:2px 8px;border-radius:var(--r-full);white-space:nowrap}
+.bg{background:var(--grh);color:var(--gr)}.bo{background:var(--orh);color:var(--or)}.bt{background:var(--prh);color:var(--pr)}.bp{background:var(--puh);color:var(--pu)}.br{background:var(--reh);color:var(--re)}.by{background:var(--yeh);color:var(--ye)}.bm{background:var(--sur3);color:var(--mu)}
+.page{max-width:1080px;margin:0 auto;padding:2.5rem 2rem 4rem}
+.ph{margin-bottom:2.5rem}
+.pt{font-size:var(--xl);font-weight:800;letter-spacing:-.04em;line-height:1.1}
+.pt span{color:var(--pr)}
+.ps{color:var(--mu);margin-top:.5rem;font-size:var(--sm);max-width:62ch}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:1rem;margin-bottom:2.5rem}
+.kpi{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r-lg);padding:1rem 1.2rem}
+.kl{font-size:var(--xs);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);margin-bottom:.35rem}
+.kv{font-size:1.4rem;font-weight:800;letter-spacing:-.03em}
+.kh{font-size:var(--xs);color:var(--fa);margin-top:.2rem}
+.ct{color:var(--pr)}.cg{color:var(--gr)}.co{color:var(--or)}.cp{color:var(--pu)}
+.sec{margin-bottom:2.5rem}
+.sh{display:flex;align-items:center;gap:.5rem;margin-bottom:1.2rem}
+.si{width:22px;height:22px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.sit{background:var(--prh);color:var(--pr)}.sig{background:var(--grh);color:var(--gr)}.sio{background:var(--orh);color:var(--or)}.sip{background:var(--puh);color:var(--pu)}
+.stit{font-size:var(--base);font-weight:700;letter-spacing:-.01em}
+.grid{display:grid;gap:1rem}
+.g2{grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+.card{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r-lg);padding:1.2rem;transition:box-shadow var(--tr),border-color var(--tr)}
+.card:hover{box-shadow:var(--sh);border-color:color-mix(in oklch,var(--pr) 30%,var(--brd))}
+.ct2{display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;margin-bottom:.7rem}
+.ctit{font-weight:700;font-size:var(--sm);line-height:1.3}
+.cb{color:var(--mu);font-size:var(--xs);line-height:1.65}
+.cb strong{color:var(--tx)}
+.cf{margin-top:.7rem;padding-top:.7rem;border-top:1px solid var(--div);display:flex;flex-wrap:wrap;gap:.4rem;align-items:center}
+.ctag{font-size:var(--xs);font-family:"JetBrains Mono",monospace;color:var(--fa)}
+.mat-wrap{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r-lg);overflow:hidden;margin-bottom:2rem}
+.mat-row{display:grid;grid-template-columns:1fr 70px 70px;gap:.5rem;padding:.55rem .85rem;border-bottom:1px solid var(--div);align-items:center}
+.mat-row:last-child{border-bottom:none}
+.mat-hd{font-size:var(--xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--fa)}
+.mn{font-size:var(--xs);font-weight:600;color:var(--tx)}.ms{font-size:11px;color:var(--mu);margin-top:1px}
+.tc{text-align:center}
+.ph-dot::before{content:"●";margin-right:5px;font-size:9px}
+.ph-h::before{color:var(--re)}.ph-m::before{color:var(--ye)}.ph-l::before{color:var(--fa)}
+.div-line{height:1px;background:var(--div);margin:2rem 0}
+.al{display:flex;flex-direction:column;gap:.5rem}
+.ai{display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem;background:var(--sur);border:1px solid var(--brd);border-radius:var(--r-md);font-size:var(--xs)}
+.an{font-weight:700;color:var(--tx);min-width:130px;flex-shrink:0}
+.aw{color:var(--mu);flex:1}
+@media(max-width:640px){.page{padding:1.5rem 1rem 3rem}.kpi-row{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}.mat-row{grid-template-columns:1fr 60px 60px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-icon">🤖</div>
+    <div><div class="brand-name">Automazioni AS Growth</div><div class="brand-sub">Principio 80/20 — massimo impatto, minimo sforzo</div></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem">
+    <span class="bdg bg">Aprile 2026</span>
+    <button class="tr-btn" id="thbtn" title="Cambia tema"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+  </div>
+</header>
+<div class="page">
+  <div class="ph">
+    <div class="pt">Pipeline <span>Automazioni</span></div>
+    <div class="ps">Tutto ciò che si può automatizzare in AS Growth, ordinato per impatto. Il 20% dello sforzo genera l'80% dei risultati.</div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi"><div class="kl">Quick Win</div><div class="kv cg">4</div><div class="kh">Attivabili subito</div></div>
+    <div class="kpi"><div class="kl">Medio Termine</div><div class="kv co">5</div><div class="kh">1–2 sett. setup</div></div>
+    <div class="kpi"><div class="kl">Avanzate</div><div class="kv cp">3</div><div class="kh">Infrastruttura AI</div></div>
+    <div class="kpi"><div class="kl">Ore/sett. risparmiate</div><div class="kv ct">20+</div><div class="kh">Stima a regime</div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sh"><div class="si sit">⚡</div><div class="stit">Matrice Impatto / Sforzo</div></div>
+    <div class="mat-wrap">
+      <div class="mat-row" style="background:var(--sur2)"><div class="mat-hd">Automazione</div><div class="mat-hd tc">Impatto</div><div class="mat-hd tc">Sforzo</div></div>
+      <div class="mat-row"><div><div class="mn ph-dot ph-h">Meeting Summary Auto (Granola)</div><div class="ms">Trascrizione + action items da ogni call</div></div><div class="tc"><span class="bdg bg">Alto</span></div><div class="tc"><span class="bdg bg">Basso</span></div></div>
+      <div class="mat-row"><div><div class="mn ph-dot ph-h">SEO Auto clienti (Comet)</div><div class="ms">Audit + contenuti + report automatici</div></div><div class="tc"><span class="bdg bg">Alto</span></div><div class="tc"><span class="bdg bg">Basso</span></div></div>
+      <div class="mat-row"><div><div class="mn ph-dot ph-h">Report settimanale team</div><div class="ms">Dati da tutti i canali → PDF → invio auto</div></div><div class="tc"><span class="bdg bg">Alto</span></div><div class="tc"><span class="bdg bg">Basso</span></div></div>
+      <div class="mat-row"><div><div class="mn ph-dot ph-h">Onboarding clienti automatico</div><div class="ms">Form → Notion → email → workspace</div></div><div class="tc"><span class="bdg bg">Alto</span></div><div class="tc"><span class="bdg bt">Medio</span></div></div>
+      <div class="mat-row"><div><div class="mn ph-dot ph-h">Lead scraping + CRM (Apify)</div><div class="ms">Scraping → filtro AI → outreach auto</div></div><div class="tc"><span class="bdg bg">Alto</span></div><div class="tc"><span class="bdg bt">Medio</span></div></div>
+      <div class="mat-row"><div><div class="mn ph-dot ph-m">Content pipeline social</div><div class="ms">Brief → 5 varianti copy → scheduling</div></div><div class="tc"><span class="bdg bg">Alto</span></div><div class="tc"><span class="bdg bt">Medio</span></div></div>
+      <div class="mat-row"><div><div class="mn ph-dot ph-m">App whitelabel creator (V0)</div><div class="ms">App col nome creator in 1h → outreach</div></div><div class="tc"><span class="bdg bg">Alto</span></div><div class="tc"><span class="bdg bt">Medio</span></div></div>
+      <div class="mat-row"><div><div class="mn ph-dot ph-m">Monitoring competitor & alert</div><div class="ms">Keyword/engagement → alert Slack</div></div><div class="tc"><span class="bdg bt">Medio</span></div><div class="tc"><span class="bdg bg">Basso</span></div></div>
+      <div class="mat-row"><div><div class="mn ph-dot ph-m">Customer service AI (Intercom)</div><div class="ms">Risponde FAQ 24/7 sui siti clienti</div></div><div class="tc"><span class="bdg bg">Alto</span></div><div class="tc"><span class="bdg bt">Medio</span></div></div>
+      <div class="mat-row"><div><div class="mn ph-dot ph-l">Agente marketer del team</div><div class="ms">AI allenato su brand + strategie agenzia</div></div><div class="tc"><span class="bdg bg">Alto</span></div><div class="tc"><span class="bdg bo">Alto</span></div></div>
+      <div class="mat-row"><div><div class="mn ph-dot ph-l">Knowledge Base centralizzata</div><div class="ms">Know-how agenzia → alimenta tutti gli agenti</div></div><div class="tc"><span class="bdg bg">Alto</span></div><div class="tc"><span class="bdg bo">Alto</span></div></div>
+      <div class="mat-row"><div><div class="mn ph-dot ph-l">Analytics clienti unificata</div><div class="ms">Dashboard KPI per ogni cliente, auto-aggiornata</div></div><div class="tc"><span class="bdg bg">Alto</span></div><div class="tc"><span class="bdg bo">Alto</span></div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sh"><div class="si sig">✦</div><div class="stit">Quick Win — Attivabili Subito</div></div>
+    <div class="grid g2">
+      <div class="card"><div class="ct2"><div class="ctit">📋 Trascrizione + Summary Meeting</div><span class="bdg bg">Subito</span></div><div class="cb"><strong>Cosa fa:</strong> Granola ascolta ogni call, genera trascrizione, estrae action items e li manda su Notion automaticamente.<br><br><strong>Risparmio:</strong> 30–60 min per meeting. Su 10 call/settimana = <strong>5–10h risparmiate/sett.</strong><br><br><strong>Setup:</strong> Installa Granola + connetti Notion. Meno di 30 minuti.</div><div class="cf"><span class="ctag">Granola + Notion</span><span class="bdg bt">Lenny's Pass ✓</span></div></div>
+      <div class="card"><div class="ct2"><div class="ctit">🔍 SEO Automatizzata Clienti</div><span class="bdg bg">Caso studio pronto</span></div><div class="cb"><strong>Cosa fa:</strong> Audit SEO settimanale auto, generazione articoli ottimizzati con Claude, monitoraggio keyword, report mensile inviato al cliente.<br><br><strong>Risparmio:</strong> 6–10h/mese per cliente. Con 3 clienti = <strong>30h/mese risparmiate</strong>.<br><br><strong>Setup:</strong> Sistema già testato su Comet. Replicabile in 1–2 giorni per nuovo cliente.</div><div class="cf"><span class="ctag">Claude + n8n + Comet</span><span class="bdg bg">Caso studio: Comet ✓</span></div></div>
+      <div class="card"><div class="ct2"><div class="ctit">📊 Report Settimanale Automatico</div><span class="bdg bg">Subito</span></div><div class="cb"><strong>Cosa fa:</strong> Ogni lunedì raccoglie dati da IG, analytics, vendite → Claude genera report narrativo → inviato al team e ai clienti via email.<br><br><strong>Risparmio:</strong> 2–3h/settimana di raccolta e formattazione manuale eliminate.<br><br><strong>Setup:</strong> n8n workflow + Claude + API canali. 1 giorno di configurazione.</div><div class="cf"><span class="ctag">n8n + Claude + PostHog</span><span class="bdg bt">Lenny's Pass ✓</span></div></div>
+      <div class="card"><div class="ct2"><div class="ctit">📦 Onboarding Clienti Automatico</div><span class="bdg bt">1–2 giorni setup</span></div><div class="cb"><strong>Cosa fa:</strong> Cliente compila form → crea automaticamente: record Notion, cartella Drive, email benvenuto con accessi, workspace condiviso, task team.<br><br><strong>Risparmio:</strong> 1–2h per ogni nuovo cliente. Zero errori manuali.<br><br><strong>Setup:</strong> Typeform + Make.com + Notion. 1 giorno.</div><div class="cf"><span class="ctag">Typeform + Make.com + Notion</span><span class="bdg bo">Accesso: Make.com</span></div></div>
+    </div>
+  </div>
+
+  <div class="div-line"></div>
+
+  <div class="sec">
+    <div class="sh"><div class="si sio">◆</div><div class="stit">Medio Termine — 1–2 Settimane Setup</div></div>
+    <div class="grid g2">
+      <div class="card"><div class="ct2"><div class="ctit">🎯 Lead Scraping + CRM Automatico</div><span class="bdg bo">1–2 sett.</span></div><div class="cb"><strong>Cosa fa:</strong> Apify scrapa LinkedIn/IG per profili target → filtro AI per qualità → CRM auto → sequenza outreach personalizzata parte in automatico.<br><br><strong>Impatto:</strong> 100–500 lead qualificati/settimana con zero effort manuale. 1–2% conversione = nuovi clienti continuamente.<br><br><strong>Stack:</strong> Apify → Make.com → Notion CRM → email automation.</div><div class="cf"><span class="ctag">Apify + Make.com + CRM</span><span class="bdg bo">Accesso: Apify</span></div></div>
+      <div class="card"><div class="ct2"><div class="ctit">📱 Content Pipeline Social</div><span class="bdg bo">1–2 sett.</span></div><div class="cb"><strong>Cosa fa:</strong> Brief → Claude genera 5 varianti copy per ogni formato → approvazione 1 click → scheduling automatico sui canali del personal brand.<br><br><strong>Risparmio:</strong> 4–6h/settimana per brand. Con 3 brand = <strong>12–18h/settimana</strong>.<br><br><strong>Stack:</strong> Claude + Buffer/Later + n8n webhook per approvazione rapida.</div><div class="cf"><span class="ctag">Claude + Buffer + n8n</span><span class="bdg bo">Accesso: Claude Team</span></div></div>
+      <div class="card"><div class="ct2"><div class="ctit">📲 App Whitelabel per Creator</div><span class="bdg bo">1 sett. MVP</span></div><div class="cb"><strong>Cosa fa:</strong> Per ogni creator da contattare, genera in 1h un'app col loro nome (V0 + Claude Code + Vercel). L'outreach diventa una proposta concreta e differenziata.<br><br><strong>Impatto:</strong> Su 100 outreach, 10–20 rispondono. App personalizzata aumenta il tasso di risposta.<br><br><strong>Stack:</strong> V0 (UI) + Claude Code (logica) + Vercel (deploy) + template riutilizzabile.</div><div class="cf"><span class="ctag">V0 + Claude Code + Vercel</span><span class="bdg bt">Discusso con Alessandro</span></div></div>
+      <div class="card"><div class="ct2"><div class="ctit">🔔 Monitoring & Alert Competitor</div><span class="bdg bo">3–5 giorni</span></div><div class="cb"><strong>Cosa fa:</strong> Monitora lanci competitor, variazioni keyword, picchi engagement clienti, menzioni brand. Alert immediato su Slack o WhatsApp.<br><br><strong>Impatto:</strong> Reazione in tempo reale. Vantaggio competitivo per i clienti.<br><br><strong>Stack:</strong> Apify scraping + Make.com trigger + Slack/WA webhook.</div><div class="cf"><span class="ctag">Apify + Make.com + Slack</span><span class="bdg bo">Accesso: Apify</span></div></div>
+      <div class="card"><div class="ct2"><div class="ctit">💬 Customer Service AI (Intercom)</div><span class="bdg bo">3–5 giorni</span></div><div class="cb"><strong>Cosa fa:</strong> Intercom Fin AI sui siti clienti risponde FAQ, gestisce richieste, raccoglie lead 24/7. Escalation umana solo per casi complessi.<br><br><strong>Impatto:</strong> –70–80% richieste supporto manuale. Esperienza utente superiore.<br><br><strong>Valore:</strong> $7,140/anno incluso nel Lenny's Pass.</div><div class="cf"><span class="ctag">Intercom Fin AI + Advanced</span><span class="bdg bg">Lenny's Pass ✓</span></div></div>
+    </div>
+  </div>
+
+  <div class="div-line"></div>
+
+  <div class="sec">
+    <div class="sh"><div class="si sip">✧</div><div class="stit">Avanzate — Infrastruttura AI Completa</div></div>
+    <div class="grid g2">
+      <div class="card"><div class="ct2"><div class="ctit">🧠 Agente Marketer del Team</div><span class="bdg bp">In sviluppo (Sara)</span></div><div class="cb"><strong>Cosa fa:</strong> AI allenato su tutti i brand, toni, strategie e case study dell'agenzia. Ogni membro ha un marketer AI personale sempre disponibile.<br><br><strong>Come:</strong> Knowledge base → RAG → Claude risponde come se conoscesse ogni cliente e campagna.<br><br><strong>Impatto:</strong> Elimina il tempo di briefing. La qualità non dipende da chi fa la task.</div><div class="cf"><span class="ctag">Claude + KB + RAG</span><span class="bdg bp">Sara lo sta finendo</span></div></div>
+      <div class="card"><div class="ct2"><div class="ctit">📚 Knowledge Base Centralizzata</div><span class="bdg bp">2–4 sett.</span></div><div class="cb"><strong>Cosa fa:</strong> Tutto il know-how dell'agenzia in un sistema: strategie, template, prompt library, case study, playbook per ogni servizio.<br><br><strong>Come:</strong> Notion strutturato + embedding Claude → tutti gli agenti AI attingono da qui.<br><br><strong>Impatto:</strong> La qualità del lavoro non dipende più da chi fa la task, ma dal sistema.</div><div class="cf"><span class="ctag">Notion + Claude + n8n</span><span class="bdg bo">Accesso: Notion Business</span></div></div>
+      <div class="card"><div class="ct2"><div class="ctit">📈 Analytics Clienti Unificata</div><span class="bdg bp">3–4 sett.</span></div><div class="cb"><strong>Cosa fa:</strong> Dashboard unica per ogni cliente: social, SEO, conversioni, revenue. Aggiornata in real-time. Presentabile in call.<br><br><strong>Come:</strong> PostHog raccoglie → Railway ospita → n8n aggiorna tutto automaticamente.<br><br><strong>Impatto:</strong> Reporting professionale che fidelizza i clienti e giustifica il prezzo del servizio.</div><div class="cf"><span class="ctag">PostHog + Railway + n8n</span><span class="bdg bg">Lenny's Pass ✓</span></div></div>
+    </div>
+  </div>
+
+  <div class="div-line"></div>
+
+  <div class="sec">
+    <div class="sh"><div class="si sio">🔑</div><div class="stit">Accessi da Richiedere ad Alessandro</div></div>
+    <div class="al">
+      <div class="ai"><div class="an">Make.com</div><div class="aw">Core automation engine — onboarding, report, monitoring, lead pipeline</div><span class="bdg br">Urgente</span></div>
+      <div class="ai"><div class="an">Apify</div><div class="aw">Lead scraping e monitoring competitor — Alessandro già sta testando</div><span class="bdg br">Urgente</span></div>
+      <div class="ai"><div class="an">Claude Team</div><div class="aw">Content pipeline, agente marketer, SEO — Alessandro ha detto "prendo team a breve"</div><span class="bdg br">Urgente</span></div>
+      <div class="ai"><div class="an">Notion Business</div><div class="aw">Knowledge base e onboarding clienti — già chiesto accesso Drive in chat</div><span class="bdg by">Media</span></div>
+      <div class="ai"><div class="an">n8n Cloud</div><div class="aw">Workflow AI avanzati — incluso Lenny's Pass</div><span class="bdg by">Media</span></div>
+      <div class="ai"><div class="an">PostHog</div><div class="aw">Analytics clienti unificata — incluso Lenny's Pass ($16,500 valore)</div><span class="bdg bm">Quando pronto</span></div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){const b=document.getElementById("thbtn"),h=document.documentElement;let t="dark";h.setAttribute("data-theme",t);b&&b.addEventListener("click",()=>{t=t==="dark"?"light":"dark";h.setAttribute("data-theme",t);b.innerHTML=t==="dark"?'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>';});})();
+</script>
+</body>
+</html>
