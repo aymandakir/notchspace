@@ -46,18 +46,28 @@ jobs:
       - name: Find .app
         id: app
         run: |
-          APP=$(find .build/DerivedData -name "NotchSpace.app" -type d | head -1)
+          # xcodebuild puts the product in Build/Products/<config>/
+          APP=$(find .build/DerivedData/Build/Products -name "NotchSpace.app" -type d 2>/dev/null | head -1)
+          # Fallback: search the entire DerivedData tree
+          if [ -z "$APP" ]; then
+            APP=$(find .build/DerivedData -name "NotchSpace.app" -type d 2>/dev/null | head -1)
+          fi
           echo "path=$APP" >> $GITHUB_OUTPUT
+          if [ -z "$APP" ]; then
+            echo "ERROR: NotchSpace.app not found"
+            find .build/DerivedData/Build/Products -maxdepth 3 2>/dev/null || true
+            exit 1
+          fi
           echo "Found app at: $APP"
 
       - name: Create DMG
         run: |
+          APP="${{ steps.app.outputs.path }}"
           mkdir -p dist
 
-          # Create a writable disk image
           hdiutil create \
             -volname "NotchSpace" \
-            -srcfolder "${{ steps.app.outputs.path }}" \
+            -srcfolder "$APP" \
             -ov \
             -format UDZO \
             -imagekey zlib-level=9 \
