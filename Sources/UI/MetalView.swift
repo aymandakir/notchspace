@@ -39,7 +39,6 @@ struct MetalView: NSViewRepresentable {
         // Transparent background so the black pill shows through.
         view.clearColor = MTLClearColorMake(0, 0, 0, 0)
         view.colorPixelFormat = .bgra8Unorm
-        view.isOpaque = false
         view.layer?.isOpaque = false
 
         return view
