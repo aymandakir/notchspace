@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     name: Build & Test
-    runs-on: macos-14
+    runs-on: macos-15
 
     steps:
       - name: Checkout
@@ -54,7 +54,7 @@ jobs:
   # Only runs on push to main (not on PRs) since it is slower.
   xcode-build:
     name: Xcode Build (macOS app)
-    runs-on: macos-14
+    runs-on: macos-15
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build
 
