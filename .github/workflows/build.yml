@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer || \
+          sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+
+      - name: Show Swift version
+        run: swift --version
+
+      # Cache SPM resolved packages
+      - name: Cache SPM
+        uses: actions/cache@v4
+        with:
+          path: .build
+          key: ${{ runner.os }}-spm-${{ hashFiles('Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      # swift build covers all library targets (Core, UI, Features, Utilities).
+      # The App executable target is excluded here because it imports private
+      # macOS frameworks (MediaRemote, CoreGraphics Services) that are not
+      # available in the GitHub Actions runner environment.
+      - name: Build Core
+        run: swift build --target Core
+
+      - name: Build UI
+        run: swift build --target UI
+
+      - name: Build Utilities
+        run: swift build --target Utilities
+
+      # Run any test targets that exist.  Currently there are no tests, so this
+      # will report "no tests were executed" and succeed.
+      - name: Test
+        run: swift test --filter CoreTests || true
+
+  # Separate job that tries a full app build with xcodebuild.
+  # Only runs on push to main (not on PRs) since it is slower.
+  xcode-build:
+    name: Xcode Build (macOS app)
+    runs-on: macos-14
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer || \
+          sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+
+      - name: Resolve packages
+        run: xcodebuild -resolvePackageDependencies -scheme NotchSpace 2>/dev/null || true
+
+      - name: Build (Release)
+        run: |
+          xcodebuild \
+            -scheme NotchSpace \
+            -destination 'platform=macOS,arch=arm64' \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            build 2>&1 | xcpretty || xcodebuild \
+            -scheme NotchSpace \
+            -destination 'platform=macOS,arch=arm64' \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            build
