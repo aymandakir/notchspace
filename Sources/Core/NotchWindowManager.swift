@@ -46,7 +46,8 @@ public final class NotchWindowManager {
         p.hasShadow       = false
 
         // Float above every other window, including full-screen apps.
-        p.level = NSWindow.Level(rawValue: NSWindow.Level.maximumWindow.rawValue + 1)
+        // .screenSaver (1000) is the highest named level; +1 clears it too.
+        p.level = NSWindow.Level(rawValue: NSWindow.Level.screenSaver.rawValue + 1)
 
         // Visible on every Space; never repositioned by Mission Control.
         p.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenNone, .ignoresCycle]
