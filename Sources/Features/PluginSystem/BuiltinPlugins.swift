@@ -9,7 +9,7 @@ import Core
 
 // MARK: Media
 
-public final class MediaPlugin: NotchPlugin {
+@MainActor public final class MediaPlugin: NotchPlugin {
     public let id   = "space.notch.media"
     public let name = "Media"
     public let icon = "music.note"
@@ -19,7 +19,7 @@ public final class MediaPlugin: NotchPlugin {
 
 // MARK: Clipboard
 
-public final class ClipboardPlugin: NotchPlugin {
+@MainActor public final class ClipboardPlugin: NotchPlugin {
     public let id   = "space.notch.clipboard"
     public let name = "Clipboard"
     public let icon = "doc.on.clipboard"
@@ -29,7 +29,7 @@ public final class ClipboardPlugin: NotchPlugin {
 
 // MARK: System HUD (overlay-only)
 
-public final class SystemPlugin: NotchPlugin {
+@MainActor public final class SystemPlugin: NotchPlugin {
     public let id   = "space.notch.system"
     public let name = "System HUD"
     public let icon = "dial.medium"
@@ -46,7 +46,7 @@ public final class SystemPlugin: NotchPlugin {
 
 // MARK: AI Assistant
 
-public final class AIPlugin: NotchPlugin {
+@MainActor public final class AIPlugin: NotchPlugin {
     public let id   = "space.notch.ai"
     public let name = "AI"
     public let icon = "sparkles"
@@ -56,7 +56,7 @@ public final class AIPlugin: NotchPlugin {
 
 // MARK: Focus Timer
 
-public final class FocusPlugin: NotchPlugin {
+@MainActor public final class FocusPlugin: NotchPlugin {
     public let id   = "space.notch.focus"
     public let name = "Focus"
     public let icon = "timer"

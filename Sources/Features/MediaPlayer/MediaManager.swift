@@ -107,12 +107,12 @@ public final class MediaManager: ObservableObject {
         let nc = NotificationCenter.default
         observers.append(
             nc.addObserver(forName: .init(MRNote.infoChanged),  object: nil, queue: .main) { [weak self] _ in
-                self?.fetchInfo()
+                Task { @MainActor [weak self] in self?.fetchInfo() }
             }
         )
         observers.append(
             nc.addObserver(forName: .init(MRNote.stateChanged), object: nil, queue: .main) { [weak self] _ in
-                self?.fetchPlayState()
+                Task { @MainActor [weak self] in self?.fetchPlayState() }
             }
         )
     }
