@@ -154,7 +154,7 @@ struct SettingsView: View {
                     Text("Version \(Bundle.main.shortVersionString)")
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Button("Check for Updates…") { updater.checkForUpdates(nil) }
+                    Button("Check for Updates…") { updater.checkForUpdates() }
                 }
             }
         }

@@ -7,10 +7,9 @@ import UI
 import Features
 
 // MARK: - Intensity driver
-//
-// Observes MediaManager + AIAssistantManager and maps their state to the
-// NotchViewModel.backgroundIntensity value read by the aurora shader.
 
+// @MainActor so it can safely subscribe to @MainActor-isolated publishers.
+@MainActor
 private final class IntensityDriver {
     private var cancellables = Set<AnyCancellable>()
 
@@ -21,25 +20,34 @@ private final class IntensityDriver {
         )
         .receive(on: RunLoop.main)
         .map { isPlaying, isLoading -> Float in
-            if isLoading { return 0.65 }   // AI streaming → strong glow
-            if isPlaying { return 0.28 }   // Music playing → subtle glow
+            if isLoading { return 0.65 }
+            if isPlaying { return 0.28 }
             return 0.0
         }
         .removeDuplicates()
         .sink { [weak viewModel] intensity in
-            Task { @MainActor in viewModel?.backgroundIntensity = intensity }
+            // Capture weak ref as a local let before the Task boundary to
+            // avoid the "captured var in concurrently-executing code" error.
+            let vm = viewModel
+            Task { @MainActor in vm?.backgroundIntensity = intensity }
         }
         .store(in: &cancellables)
     }
 }
 
+// MARK: - App
+
+// @MainActor ensures that stored-property inline initializers (NotchViewModel(),
+// SPUStandardUpdaterController, etc.) are evaluated on the main actor, which
+// satisfies the actor-isolation requirements of those @MainActor types.
+@MainActor
 @main
 struct NotchSpaceApp: App {
 
-    private let viewModel = NotchViewModel()
-    private let updaterController = SPUStandardUpdaterController(
-        startingUpdater: true,
-        updaterDelegate: nil,
+    private let viewModel          = NotchViewModel()
+    private let updaterController  = SPUStandardUpdaterController(
+        startingUpdater:    true,
+        updaterDelegate:    nil,
         userDriverDelegate: nil
     )
     private let intensityDriver: IntensityDriver
@@ -51,7 +59,7 @@ struct NotchSpaceApp: App {
         pm.register(ClipboardPlugin())
         pm.register(AIPlugin())
         pm.register(FocusPlugin())
-        pm.register(SystemPlugin(viewModel: viewModel))  // overlay-only, not in dock
+        pm.register(SystemPlugin(viewModel: viewModel))
 
         // 2. Load any .notchplugin bundles the user has installed.
         pm.loadExternalPlugins()
