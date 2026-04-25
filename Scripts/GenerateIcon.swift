@@ -1,143 +1,209 @@
 #!/usr/bin/env swift
-//
 // GenerateIcon.swift
-// Run from the repo root:  swift Scripts/GenerateIcon.swift
+// Generates all macOS AppIcon sizes for NotchSpace.
+// Run: swift Scripts/GenerateIcon.swift
 //
-// Requires macOS 12+ (for SF Symbol with configuration).
-// Outputs PNG files to Sources/App/Resources/Assets.xcassets/AppIcon.appiconset/
+// Design: space-black rounded square, white notch pill (slightly above centre),
+//         electric-blue bolt inside the pill, dual aurora glow (purple left /
+//         blue right) at ~15 % opacity so the overall feel stays dark & minimal.
 
-import AppKit
 import CoreGraphics
+import ImageIO
+import Foundation
+import CryptoKit
 
-// ─── Output directory ────────────────────────────────────────────────────────
+// ── Output path ───────────────────────────────────────────────────────────────
 
-let repoRoot   = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-let outputDir  = repoRoot
-    .appendingPathComponent("Sources/App/Resources/Assets.xcassets/AppIcon.appiconset")
+let outputDir = "Sources/App/Resources/Assets.xcassets/AppIcon.appiconset"
 
-// ─── Icon renderer ────────────────────────────────────────────────────────────
-//
-// Visual design
-//   • Deep space-black rounded square
-//   • White notch pill near the top (like the hardware notch)
-//   • Electric-blue bolt.fill SF Symbol below the pill
+// ── Colour helpers ────────────────────────────────────────────────────────────
 
-func renderIcon(size: Int) -> NSImage {
-    let s    = CGFloat(size)
-    let img  = NSImage(size: NSSize(width: s, height: s))
-    img.lockFocus()
-    defer { img.unlockFocus() }
+let cs = CGColorSpaceCreateDeviceRGB()
 
-    let ctx  = NSGraphicsContext.current!.cgContext
-    let rect = CGRect(x: 0, y: 0, width: s, height: s)
+func col(_ r: CGFloat, _ g: CGFloat, _ b: CGFloat, _ a: CGFloat = 1) -> CGColor {
+    CGColor(colorSpace: cs, components: [r, g, b, a])!
+}
 
-    // ── Background ───────────────────────────────────────────────────────────
-    let radius = s * 0.22
-    let bgPath = CGPath(roundedRect: rect, cornerWidth: radius, cornerHeight: radius, transform: nil)
-    ctx.addPath(bgPath)
-    ctx.setFillColor(CGColor(red: 0.04, green: 0.04, blue: 0.07, alpha: 1))
-    ctx.fillPath()
+// Palette
+let spaceBlack   = col(0.039, 0.039, 0.059)          // #0A0A0F
+let pillFill     = col(1, 1, 1, 0.10)
+let pillStroke   = col(1, 1, 1, 0.55)
+let boltBlue     = col(0.000, 0.659, 1.000, 0.95)    // #00A8FF
+let boltGlow     = col(0.000, 0.659, 1.000, 0.35)
+let purpleGlow0  = col(0.239, 0.102, 0.431, 0.15)    // #3D1A6E
+let purpleGlow1  = col(0.239, 0.102, 0.431, 0.00)
+let blueGlow0    = col(0.000, 0.659, 1.000, 0.15)
+let blueGlow1    = col(0.000, 0.659, 1.000, 0.00)
 
-    // Subtle gradient overlay on the background
-    let gradient = CGGradient(
-        colorsSpace: CGColorSpaceCreateDeviceRGB(),
-        colors: [
-            CGColor(red: 0.10, green: 0.10, blue: 0.18, alpha: 0.6),
-            CGColor(red: 0.02, green: 0.02, blue: 0.05, alpha: 0.8),
-        ] as CFArray,
-        locations: [0, 1]
-    )!
-    ctx.saveGState()
+// ── Renderer ──────────────────────────────────────────────────────────────────
+
+func renderIcon(size: Int) -> CGImage {
+    let s = CGFloat(size)
+
+    guard let ctx = CGContext(
+        data: nil, width: size, height: size,
+        bitsPerComponent: 8, bytesPerRow: 0, space: cs,
+        bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+    ) else { fatalError("CGContext creation failed") }
+
+    let rect    = CGRect(x: 0, y: 0, width: s, height: s)
+    let corner  = s * 0.225          // macOS icon corner radius ≈ 22.5 %
+
+    // ── Clip to macOS rounded square ──────────────────────────────────────────
+    let bgPath = CGMutablePath()
+    bgPath.addRoundedRect(in: rect, cornerWidth: corner, cornerHeight: corner)
     ctx.addPath(bgPath)
     ctx.clip()
-    ctx.drawLinearGradient(gradient,
-        start: CGPoint(x: s * 0.5, y: s),
-        end:   CGPoint(x: s * 0.5, y: 0),
-        options: []
-    )
-    ctx.restoreGState()
 
-    // ── Notch pill ────────────────────────────────────────────────────────────
-    let pillW: CGFloat = s * 0.50
-    let pillH: CGFloat = s * 0.16
-    let pillX: CGFloat = (s - pillW) / 2
-    let pillY: CGFloat = s * 0.66
-    let pillR           = pillH / 2
-    let pillRect        = CGRect(x: pillX, y: pillY, width: pillW, height: pillH)
+    // ── Space-black background ────────────────────────────────────────────────
+    ctx.setFillColor(spaceBlack)
+    ctx.fill(rect)
 
-    // Fill
-    ctx.addPath(CGPath(roundedRect: pillRect, cornerWidth: pillR, cornerHeight: pillR, transform: nil))
-    ctx.setFillColor(CGColor(red: 1, green: 1, blue: 1, alpha: 0.12))
-    ctx.fillPath()
+    // ── Aurora glow — purple (left) ───────────────────────────────────────────
+    let glowR = s * 0.58
+    let pg = CGGradient(colorsSpace: cs,
+                        colors: [purpleGlow0, purpleGlow1] as CFArray,
+                        locations: [0, 1])!
+    ctx.drawRadialGradient(pg,
+        startCenter: CGPoint(x: s * 0.30, y: s * 0.53), startRadius: 0,
+        endCenter:   CGPoint(x: s * 0.30, y: s * 0.53), endRadius: glowR,
+        options: [])
 
-    // Stroke
-    let pillStroke = pillRect.insetBy(dx: s * 0.006, dy: s * 0.006)
-    ctx.addPath(CGPath(roundedRect: pillStroke, cornerWidth: pillR, cornerHeight: pillR, transform: nil))
-    ctx.setStrokeColor(CGColor(red: 1, green: 1, blue: 1, alpha: 0.45))
-    ctx.setLineWidth(max(1, s * 0.009))
-    ctx.strokePath()
+    // ── Aurora glow — blue (right) ────────────────────────────────────────────
+    let bg = CGGradient(colorsSpace: cs,
+                        colors: [blueGlow0, blueGlow1] as CFArray,
+                        locations: [0, 1])!
+    ctx.drawRadialGradient(bg,
+        startCenter: CGPoint(x: s * 0.70, y: s * 0.53), startRadius: 0,
+        endCenter:   CGPoint(x: s * 0.70, y: s * 0.53), endRadius: glowR,
+        options: [])
 
-    // ── Bolt SF Symbol ────────────────────────────────────────────────────────
-    let symbolPt  = s * 0.28
-    let symConfig = NSImage.SymbolConfiguration(pointSize: symbolPt, weight: .semibold)
-    if let bolt   = NSImage(systemSymbolName: "bolt.fill", accessibilityDescription: nil)?
-                        .withSymbolConfiguration(symConfig) {
-        // Tint to electric blue by drawing with a color overlay
-        let symW = bolt.size.width
-        let symH = bolt.size.height
-        let symX = (s - symW) / 2
-        let symY = s * 0.16
+    // ── Pill (notch shape) ────────────────────────────────────────────────────
+    let pillW  = s * 0.40
+    let pillH  = max(CGFloat(size >= 32 ? 4 : 2), s * 0.135)
+    let pillX  = (s - pillW) / 2
+    let pillY  = (s - pillH) / 2 + s * 0.025     // slightly above centre
+    let pillR  = pillH / 2
+    let pillRt = CGRect(x: pillX, y: pillY, width: pillW, height: pillH)
 
-        NSGraphicsContext.current?.imageInterpolation = .high
+    let pillPath = CGMutablePath()
+    pillPath.addRoundedRect(in: pillRt, cornerWidth: pillR, cornerHeight: pillR)
 
-        // Draw a blue tinted version using compositing
-        NSColor(calibratedRed: 0.30, green: 0.60, blue: 1.0, alpha: 0.90).setFill()
-        let symRect = NSRect(x: symX, y: symY, width: symW, height: symH)
+    ctx.setFillColor(pillFill)
+    ctx.addPath(pillPath); ctx.fillPath()
 
-        // Draw into a temporary image so we can apply color
-        let tinted = NSImage(size: bolt.size)
-        tinted.lockFocus()
-        NSColor(calibratedRed: 0.30, green: 0.60, blue: 1.0, alpha: 0.90).set()
-        bolt.draw(at: .zero, from: .zero, operation: .sourceAtop, fraction: 1.0)
-        tinted.unlockFocus()
-        tinted.draw(in: symRect, from: .zero, operation: .sourceOver, fraction: 1.0)
+    ctx.setStrokeColor(pillStroke)
+    ctx.setLineWidth(max(0.5, s * 0.007))
+    ctx.addPath(pillPath); ctx.strokePath()
+
+    // ── Electric-blue bolt ────────────────────────────────────────────────────
+    guard size >= 16 else { return ctx.makeImage()! }
+
+    let bH  = pillH * 0.70          // bolt height
+    let bW  = bH * 0.58             // bolt width
+    let cx  = s / 2
+    let cy  = pillY + pillH / 2     // centre of pill
+    let hH  = bH / 2
+    let hW  = bW / 2
+
+    // Six-point lightning-bolt polygon (CG y-axis: 0 = bottom)
+    //
+    //     P1 ──┐
+    //     P6   P2
+    //     └──  P3
+    //          │
+    //     P5   P4
+    //     └────┘
+    //
+    let bolt = CGMutablePath()
+    bolt.move(to:    CGPoint(x: cx + hW * 0.65,  y: cy + hH))          // P1 top-right
+    bolt.addLine(to: CGPoint(x: cx - hW * 0.12,  y: cy + hH * 0.10))  // P2 step-left
+    bolt.addLine(to: CGPoint(x: cx + hW * 0.30,  y: cy + hH * 0.10))  // P3 step-right
+    bolt.addLine(to: CGPoint(x: cx - hW * 0.65,  y: cy - hH))         // P4 bottom-left
+    bolt.addLine(to: CGPoint(x: cx + hW * 0.12,  y: cy - hH * 0.10))  // P5 step-right
+    bolt.addLine(to: CGPoint(x: cx - hW * 0.30,  y: cy - hH * 0.10))  // P6 step-left
+    bolt.closeSubpath()
+
+    // Soft glow behind bolt (larger sizes only)
+    if size >= 64 {
+        let bg2 = CGGradient(colorsSpace: cs,
+                             colors: [boltGlow, col(0, 0.659, 1, 0)] as CFArray,
+                             locations: [0, 1])!
+        ctx.drawRadialGradient(bg2,
+            startCenter: CGPoint(x: cx, y: cy), startRadius: 0,
+            endCenter:   CGPoint(x: cx, y: cy), endRadius: pillH * 1.4,
+            options: [])
     }
 
-    // ── Inner glow border ─────────────────────────────────────────────────────
-    ctx.addPath(bgPath.copy(strokingWithWidth: max(1, s * 0.01),
-                             lineCap: .butt, lineJoin: .miter, miterLimit: 1))
-    ctx.setFillColor(CGColor(red: 1, green: 1, blue: 1, alpha: 0.07))
-    ctx.fillPath()
+    ctx.setFillColor(boltBlue)
+    ctx.addPath(bolt); ctx.fillPath()
 
-    return img
+    return ctx.makeImage()!
 }
 
-// ─── Write PNGs ───────────────────────────────────────────────────────────────
+// ── Save PNG ──────────────────────────────────────────────────────────────────
+
+func savePNG(_ image: CGImage, path: String) {
+    let url  = URL(fileURLWithPath: path)
+    guard let dest = CGImageDestinationCreateWithURL(
+        url as CFURL, "public.png" as CFString, 1, nil
+    ) else { fatalError("Cannot create PNG destination: \(path)") }
+    CGImageDestinationAddImage(dest, image, nil)
+    guard CGImageDestinationFinalize(dest) else {
+        fatalError("CGImageDestinationFinalize failed: \(path)")
+    }
+}
+
+// ── Generate all sizes ────────────────────────────────────────────────────────
 
 let sizes: [(Int, String)] = [
-    (16,   "AppIcon-16.png"),
-    (32,   "AppIcon-32.png"),
-    (64,   "AppIcon-64.png"),
-    (128,  "AppIcon-128.png"),
-    (256,  "AppIcon-256.png"),
-    (512,  "AppIcon-512.png"),
-    (1024, "AppIcon-1024.png"),
+    (16,   "AppIcon-16"),
+    (32,   "AppIcon-32"),
+    (64,   "AppIcon-64"),
+    (128,  "AppIcon-128"),
+    (256,  "AppIcon-256"),
+    (512,  "AppIcon-512"),
+    (1024, "AppIcon-1024"),
 ]
 
-try FileManager.default.createDirectory(at: outputDir, withIntermediateDirectories: true)
+try! FileManager.default.createDirectory(
+    atPath: outputDir, withIntermediateDirectories: true
+)
 
-for (size, filename) in sizes {
-    let image = renderIcon(size: size)
-    guard let tiff = image.tiffRepresentation,
-          let bitmap = NSBitmapImageRep(data: tiff),
-          let png = bitmap.representation(using: .png, properties: [:])
-    else {
-        print("⚠️  Failed to render \(filename)")
-        continue
-    }
-    let dest = outputDir.appendingPathComponent(filename)
-    try png.write(to: dest)
-    print("✓  \(filename)  (\(size)×\(size))")
+for (px, name) in sizes {
+    let path = "\(outputDir)/\(name).png"
+    savePNG(renderIcon(size: px), path: path)
+    print("✓  \(name).png  (\(px)×\(px))")
 }
 
-print("\nDone — run 'open Package.swift' in Xcode to verify the icon.")
+// ── Update Contents.json ──────────────────────────────────────────────────────
+
+let contentsJSON = """
+{
+  "images" : [
+    { "idiom" : "mac", "scale" : "1x", "size" : "16x16",   "filename" : "AppIcon-16.png"   },
+    { "idiom" : "mac", "scale" : "2x", "size" : "16x16",   "filename" : "AppIcon-32.png"   },
+    { "idiom" : "mac", "scale" : "1x", "size" : "32x32",   "filename" : "AppIcon-32.png"   },
+    { "idiom" : "mac", "scale" : "2x", "size" : "32x32",   "filename" : "AppIcon-64.png"   },
+    { "idiom" : "mac", "scale" : "1x", "size" : "128x128", "filename" : "AppIcon-128.png"  },
+    { "idiom" : "mac", "scale" : "2x", "size" : "128x128", "filename" : "AppIcon-256.png"  },
+    { "idiom" : "mac", "scale" : "1x", "size" : "256x256", "filename" : "AppIcon-256.png"  },
+    { "idiom" : "mac", "scale" : "2x", "size" : "256x256", "filename" : "AppIcon-512.png"  },
+    { "idiom" : "mac", "scale" : "1x", "size" : "512x512", "filename" : "AppIcon-512.png"  },
+    { "idiom" : "mac", "scale" : "2x", "size" : "512x512", "filename" : "AppIcon-1024.png" }
+  ],
+  "info" : { "author" : "xcode", "version" : 1 }
+}
+"""
+
+let jsonPath = "\(outputDir)/Contents.json"
+try! contentsJSON.write(toFile: jsonPath, atomically: true, encoding: .utf8)
+print("✓  Contents.json updated")
+
+// ── SHA-256 of 1024 px file ───────────────────────────────────────────────────
+
+let bigURL  = URL(fileURLWithPath: "\(outputDir)/AppIcon-1024.png")
+let bigData = try! Data(contentsOf: bigURL)
+let hash    = SHA256.hash(data: bigData)
+let hexHash = hash.compactMap { String(format: "%02x", $0) }.joined()
+print("\nSHA-256 (AppIcon-1024.png): \(hexHash)")
