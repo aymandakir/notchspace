@@ -46,68 +46,72 @@ jobs:
       - name: Assemble .app bundle
         run: |
           PROD=".build/DerivedData/Build/Products/Release"
-          APP="dist/NotchSpace.app"
+          APP="staging/NotchSpace.app"
 
           mkdir -p "$APP/Contents/MacOS"
           mkdir -p "$APP/Contents/Frameworks"
           mkdir -p "$APP/Contents/Resources"
 
-          # Executable (SPM builds a plain Unix binary, not a bundle)
+          # SPM executable target produces a plain binary
           cp "$PROD/NotchSpace" "$APP/Contents/MacOS/NotchSpace"
           chmod +x "$APP/Contents/MacOS/NotchSpace"
 
-          # Sparkle is the only dynamic framework; everything else is statically linked
+          # Sparkle is the only dynamic framework
           cp -R "$PROD/Sparkle.framework" "$APP/Contents/Frameworks/" 2>/dev/null || true
 
           # Resource bundles (Metal shaders, asset catalog)
           for bundle in "$PROD"/*.bundle; do
-            cp -R "$bundle" "$APP/Contents/Resources/" 2>/dev/null || true
+            [ -d "$bundle" ] && cp -R "$bundle" "$APP/Contents/Resources/"
           done
 
-          # Info.plist
-          cat > "$APP/Contents/Info.plist" << 'PLIST'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>CFBundleIdentifier</key>       <string>space.notch.NotchSpace</string>
-              <key>CFBundleName</key>              <string>NotchSpace</string>
-              <key>CFBundleDisplayName</key>       <string>NotchSpace</string>
-              <key>CFBundleExecutable</key>        <string>NotchSpace</string>
-              <key>CFBundlePackageType</key>       <string>APPL</string>
-              <key>CFBundleShortVersionString</key><string>1.0.0</string>
-              <key>CFBundleVersion</key>           <string>1</string>
-              <key>LSMinimumSystemVersion</key>    <string>14.0</string>
-              <key>NSHighResolutionCapable</key>   <true/>
-              <key>LSUIElement</key>               <true/>
-          </dict>
-          </plist>
-          PLIST
+          # Minimal Info.plist
+          /usr/libexec/PlistBuddy -c "Add :CFBundleIdentifier string space.notch.NotchSpace" \
+            -c "Add :CFBundleName string NotchSpace" \
+            -c "Add :CFBundleDisplayName string NotchSpace" \
+            -c "Add :CFBundleExecutable string NotchSpace" \
+            -c "Add :CFBundlePackageType string APPL" \
+            -c "Add :CFBundleShortVersionString string 1.0.0" \
+            -c "Add :CFBundleVersion string 1" \
+            -c "Add :LSMinimumSystemVersion string 14.0" \
+            -c "Add :NSHighResolutionCapable bool true" \
+            -c "Add :LSUIElement bool true" \
+            "$APP/Contents/Info.plist"
 
-          echo "Bundle contents:"
+          echo "Bundle:"
           find "$APP" -maxdepth 3
+
+      - name: Generate DMG background
+        run: swift Scripts/GenerateDMGBackground.swift
+
+      - name: Install create-dmg
+        run: brew install create-dmg
 
       - name: Create DMG
         run: |
+          VERSION="${{ github.event.release.tag_name }}"
           mkdir -p dist
 
-          hdiutil create \
-            -volname "NotchSpace" \
-            -srcfolder "dist/NotchSpace.app" \
-            -ov \
-            -format UDZO \
-            -imagekey zlib-level=9 \
-            dist/NotchSpace.dmg
+          create-dmg \
+            --volname "NotchSpace" \
+            --background "Scripts/dmg-background.png" \
+            --window-pos 200 120 \
+            --window-size 660 400 \
+            --icon-size 128 \
+            --icon "NotchSpace.app" 165 220 \
+            --hide-extension "NotchSpace.app" \
+            --app-drop-link 495 220 \
+            --no-internet-enable \
+            "dist/NotchSpace-${VERSION}.dmg" \
+            "staging/"
 
           echo "DMG created:"
-          ls -lh dist/NotchSpace.dmg
+          ls -lh "dist/NotchSpace-${VERSION}.dmg"
 
       - name: Upload DMG to release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${{ github.event.release.tag_name }}"
-          mv dist/NotchSpace.dmg "dist/NotchSpace-${VERSION}.dmg"
           gh release upload "$VERSION" \
             "dist/NotchSpace-${VERSION}.dmg" \
             --repo ${{ github.repository }} \
