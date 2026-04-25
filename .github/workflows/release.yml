@@ -43,31 +43,57 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             build
 
-      - name: Find .app
-        id: app
+      - name: Assemble .app bundle
         run: |
-          # xcodebuild puts the product in Build/Products/<config>/
-          APP=$(find .build/DerivedData/Build/Products -name "NotchSpace.app" -type d 2>/dev/null | head -1)
-          # Fallback: search the entire DerivedData tree
-          if [ -z "$APP" ]; then
-            APP=$(find .build/DerivedData -name "NotchSpace.app" -type d 2>/dev/null | head -1)
-          fi
-          echo "path=$APP" >> $GITHUB_OUTPUT
-          if [ -z "$APP" ]; then
-            echo "ERROR: NotchSpace.app not found"
-            find .build/DerivedData/Build/Products -maxdepth 3 2>/dev/null || true
-            exit 1
-          fi
-          echo "Found app at: $APP"
+          PROD=".build/DerivedData/Build/Products/Release"
+          APP="dist/NotchSpace.app"
+
+          mkdir -p "$APP/Contents/MacOS"
+          mkdir -p "$APP/Contents/Frameworks"
+          mkdir -p "$APP/Contents/Resources"
+
+          # Executable (SPM builds a plain Unix binary, not a bundle)
+          cp "$PROD/NotchSpace" "$APP/Contents/MacOS/NotchSpace"
+          chmod +x "$APP/Contents/MacOS/NotchSpace"
+
+          # Sparkle is the only dynamic framework; everything else is statically linked
+          cp -R "$PROD/Sparkle.framework" "$APP/Contents/Frameworks/" 2>/dev/null || true
+
+          # Resource bundles (Metal shaders, asset catalog)
+          for bundle in "$PROD"/*.bundle; do
+            cp -R "$bundle" "$APP/Contents/Resources/" 2>/dev/null || true
+          done
+
+          # Info.plist
+          cat > "$APP/Contents/Info.plist" << 'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleIdentifier</key>       <string>space.notch.NotchSpace</string>
+              <key>CFBundleName</key>              <string>NotchSpace</string>
+              <key>CFBundleDisplayName</key>       <string>NotchSpace</string>
+              <key>CFBundleExecutable</key>        <string>NotchSpace</string>
+              <key>CFBundlePackageType</key>       <string>APPL</string>
+              <key>CFBundleShortVersionString</key><string>1.0.0</string>
+              <key>CFBundleVersion</key>           <string>1</string>
+              <key>LSMinimumSystemVersion</key>    <string>14.0</string>
+              <key>NSHighResolutionCapable</key>   <true/>
+              <key>LSUIElement</key>               <true/>
+          </dict>
+          </plist>
+          PLIST
+
+          echo "Bundle contents:"
+          find "$APP" -maxdepth 3
 
       - name: Create DMG
         run: |
-          APP="${{ steps.app.outputs.path }}"
           mkdir -p dist
 
           hdiutil create \
             -volname "NotchSpace" \
-            -srcfolder "$APP" \
+            -srcfolder "dist/NotchSpace.app" \
             -ov \
             -format UDZO \
             -imagekey zlib-level=9 \
