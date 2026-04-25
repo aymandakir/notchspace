@@ -1,6 +1,7 @@
 import AppKit
 import CoreAudio
 import IOKit
+import SwiftUI
 import Core
 
 // MARK: - Private CoreGraphics Services API
@@ -38,6 +39,7 @@ private enum MediaKey: Int32 {
 
 /// Intercepts global media-key events, suppresses the macOS bezel HUD,
 /// and drives `NotchViewModel` to show the custom `SystemHUDPanel`.
+@MainActor
 public final class SystemHUDManager {
 
     public static let shared = SystemHUDManager()
@@ -86,7 +88,7 @@ public final class SystemHUDManager {
 
     private func installMediaKeyMonitor() {
         eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: .systemDefined) { [weak self] event in
-            self?.handle(event)
+            Task { @MainActor [weak self] in self?.handle(event) }
         }
     }
 
